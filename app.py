@@ -139,14 +139,6 @@ st.divider()
 # =================================================
 
 st.header("🎯 Which topics perform best?")
-topic_labels = {
-    0: "Mixed Global Entertainment",
-    1: "Arabic Gaming & Entertainment",
-    2: "eFootball / Football Gaming",
-    3: "Spanish-Language / Mixed Entertainment",
-    4: "French-Language Entertainment",
-    5: "Arabic Gaming, Music & Entertainment"
-}
 
 if "topic" in df.columns:
 
@@ -162,7 +154,30 @@ if "topic" in df.columns:
     )
 
     topic_perf["topic"] = topic_perf["topic"].astype(int)
-    topic_perf["Topic"] = topic_perf["topic"].map(topic_labels)
+
+    # Use dynamic weekly topic descriptions when available
+    if "topic_label" in df.columns:
+        label_map = (
+            df[["topic", "topic_label"]]
+            .drop_duplicates(subset=["topic"])
+            .set_index("topic")["topic_label"]
+            .to_dict()
+        )
+
+        topic_perf["Topic"] = (
+            topic_perf["topic"]
+            .map(label_map)
+            .fillna(
+                topic_perf["topic"].apply(
+                    lambda x: f"Topic {x}"
+                )
+            )
+        )
+    else:
+        topic_perf["Topic"] = (
+            topic_perf["topic"]
+            .apply(lambda x: f"Topic {x}")
+        )
 
     fig_topic = px.bar(
         topic_perf,
@@ -509,3 +524,28 @@ with st.expander("⚠️ Data and Analysis Limitations"):
 st.caption(
     "Morocco YouTube Trends — Internship Phase 2 creator dashboard"
 )
+
+
+# =================================================
+# WEEKLY AI TREND REPORT
+# =================================================
+
+st.divider()
+
+st.header("📝 Weekly Trend Report")
+
+REPORT_PATH = "data/weekly_trend_report.md"
+
+if os.path.exists(REPORT_PATH):
+
+    with open(REPORT_PATH, "r", encoding="utf-8") as f:
+        weekly_report = f.read()
+
+    st.markdown(weekly_report)
+
+else:
+
+    st.info(
+        "The weekly AI trend report will appear here "
+        "after the first automated weekly update."
+    )
