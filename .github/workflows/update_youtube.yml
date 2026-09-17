@@ -33,13 +33,16 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install google-api-python-client google-generativeai yt-dlp openai-whisper langdetect scikit-learn
-
-      - name: Run weekly YouTube update
-        run: |
-          python weekly_update.py
+            python -m pip install --upgrade pip
+            python -m pip install pandas numpy
+            python -m pip install scikit-learn langdetect
+            python -m pip install google-api-python-client
+            python -m pip install google-generativeai
+            python -m pip install yt-dlp
+            python -m pip install openai-whisper
+              - name: Run weekly YouTube update
+                run: |
+                  python weekly_update.py
 
       - name: Commit updated dashboard data
         run: |
