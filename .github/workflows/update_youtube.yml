@@ -40,9 +40,9 @@ jobs:
             python -m pip install google-generativeai
             python -m pip install yt-dlp
             python -m pip install openai-whisper
-              - name: Run weekly YouTube update
-                run: |
-                  python weekly_update.py
+      - name: Run weekly YouTube update
+        run: |
+             python weekly_update.py
 
       - name: Commit updated dashboard data
         run: |
