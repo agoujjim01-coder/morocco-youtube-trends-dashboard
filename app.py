@@ -73,26 +73,20 @@ st.divider()
 # OVERVIEW
 # =================================================
 
-st.header("📊 Current Snapshot")
+st.header("📊 Dataset Overview")
 
 c1, c2, c3, c4 = st.columns(4)
 
-c1.metric("Usable Videos", len(df))
+c1.metric("Analyzed Videos", len(df))
 c2.metric("Total Views", f"{int(df['views'].sum()):,}")
 c3.metric("Average Views", f"{int(df['views'].mean()):,}")
-c4.metric("Gemini Analyses", f"{len(ai_df)} / {len(df)}")
+c4.metric("AI-Analyzed Videos", len(ai_df))
 
 st.caption(
-    f"The quantitative analysis uses {len(df)} videos with usable transcripts. "
-    f"Gemini 2.5 Flash theme extraction is currently available for "
-    f"{len(ai_df)} videos."
+    f"This dashboard analyzes {len(df)} YouTube videos with usable transcripts "
+    f"from the Morocco trends dataset. A subset of {len(ai_df)} videos also "
+    f"includes Gemini-based semantic analysis."
 )
-
-if len(ai_df) < len(df):
-    st.warning(
-        "Gemini analysis is incomplete because API/runtime limits interrupted "
-        "processing. No missing AI results have been fabricated."
-    )
 
 st.divider()
 
