@@ -241,9 +241,19 @@ st.divider()
 # 4. LANGUAGE
 # =================================================
 
-st.header("🗣️ What language does the audience respond to?")
+st.header("🗣️ Performance by detected transcript language")
 
 if "language" in df.columns:
+
+    language_names = {
+        "ar": "Arabic / Darija",
+        "en": "English",
+        "fr": "French",
+        "es": "Spanish",
+        "lt": "Uncertain detection (lt)",
+        "no": "Uncertain detection (no)",
+        "so": "Uncertain detection (so)"
+    }
 
     language_perf = (
         df.groupby("language")
@@ -253,36 +263,71 @@ if "language" in df.columns:
             median_views=("views", "median")
         )
         .reset_index()
-        .sort_values("median_views", ascending=False)
+    )
+
+    language_perf["Language"] = (
+        language_perf["language"]
+        .map(language_names)
+        .fillna(language_perf["language"])
+    )
+
+    language_perf = language_perf.sort_values(
+        "median_views",
+        ascending=False
     )
 
     fig_language = px.bar(
         language_perf,
-        x="language",
+        x="Language",
         y="median_views",
+        hover_data=["videos"],
         labels={
-            "language": "Detected Language",
-            "median_views": "Median Views"
+            "Language": "Detected Transcript Language",
+            "median_views": "Median Views",
+            "videos": "Number of Videos"
         }
     )
 
     st.plotly_chart(fig_language, use_container_width=True)
 
+    display_language = language_perf[
+        ["Language", "videos", "average_views", "median_views"]
+    ].copy()
+
+    display_language = display_language.rename(
+        columns={
+            "videos": "Videos",
+            "average_views": "Average Views",
+            "median_views": "Median Views"
+        }
+    )
+
+    display_language["Average Views"] = (
+        display_language["Average Views"].round(0).astype(int)
+    )
+
+    display_language["Median Views"] = (
+        display_language["Median Views"].round(0).astype(int)
+    )
+
     st.dataframe(
-        language_perf,
+        display_language,
         use_container_width=True,
         hide_index=True
     )
 
     st.caption(
-        "Language groups are uneven. English results are influenced by a "
-        "major high-view video, while some one-video language labels may "
-        "reflect multilingual or noisy speech-to-text transcripts. "
-        "Arabic detection may also include Darija."
+        "Language is automatically detected from video transcripts. "
+        "Arabic detections may include Moroccan Darija. Results should be "
+        "interpreted with sample size in mind: some language groups contain "
+        "only one or two videos, and multilingual or noisy transcripts can "
+        "produce uncertain language labels."
     )
 
 else:
-    st.info("Language labels are not available in the current dataset.")
+    st.info(
+        "Detected transcript language is not available in the current dataset."
+    )
 
 st.divider()
 
