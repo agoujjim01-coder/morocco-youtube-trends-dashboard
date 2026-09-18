@@ -135,15 +135,15 @@ st.caption(
 st.divider()
 
 # =================================================
-# 2. TOPIC PERFORMANCE
+# 2. CONTENT CATEGORY PERFORMANCE
 # =================================================
 
-st.header("🎯 Which topics perform best?")
+st.header("🎯 Which content categories perform best?")
 
-if "topic" in df.columns:
+if "content_category" in df.columns:
 
-    topic_perf = (
-        df.groupby("topic")
+    category_perf = (
+        df.groupby("content_category")
         .agg(
             videos=("video_id", "count"),
             average_views=("views", "mean"),
@@ -153,59 +153,51 @@ if "topic" in df.columns:
         .sort_values("median_views", ascending=False)
     )
 
-    topic_perf["topic"] = topic_perf["topic"].astype(int)
-
-    # Use dynamic weekly topic descriptions when available
-    if "topic_label" in df.columns:
-        label_map = (
-            df[["topic", "topic_label"]]
-            .drop_duplicates(subset=["topic"])
-            .set_index("topic")["topic_label"]
-            .to_dict()
-        )
-
-        topic_perf["Topic"] = (
-            topic_perf["topic"]
-            .map(label_map)
-            .fillna(
-                topic_perf["topic"].apply(
-                    lambda x: f"Topic {x}"
-                )
-            )
-        )
-    else:
-        topic_perf["Topic"] = (
-            topic_perf["topic"]
-            .apply(lambda x: f"Topic {x}")
-        )
-
-    fig_topic = px.bar(
-        topic_perf,
-        x="Topic",
+    fig_category = px.bar(
+        category_perf,
+        x="content_category",
         y="median_views",
         labels={
-            "Topic": "Topic Cluster",
+            "content_category": "Content Category",
             "median_views": "Median Views"
         }
     )
 
-    st.plotly_chart(fig_topic, use_container_width=True)
+    st.plotly_chart(fig_category, use_container_width=True)
+
+    display_category = category_perf.rename(
+        columns={
+            "content_category": "Content Category",
+            "videos": "Videos",
+            "average_views": "Average Views",
+            "median_views": "Median Views"
+        }
+    )
+
+    display_category["Average Views"] = (
+        display_category["Average Views"].round(0).astype(int)
+    )
+
+    display_category["Median Views"] = (
+        display_category["Median Views"].round(0).astype(int)
+    )
 
     st.dataframe(
-        topic_perf,
+        display_category,
         use_container_width=True,
         hide_index=True
     )
 
     st.caption(
-        "The six topic clusters come from the Phase 1 text analysis. "
-        "Some clusters are influenced by language differences, so they "
-        "should not be treated as perfect semantic categories."
+        "Videos are grouped into creator-friendly content categories based on "
+        "their content, including Music, Gaming, Movies & Series, "
+        "Entertainment & Challenges, and Sports & Football. Median views are "
+        "used for comparison because breakout videos can strongly affect averages."
     )
 
 else:
-    st.info(
-        "Topic cluster labels are not stored in the current dashboard dataset."
+    st.warning(
+        "Content categories are not available in the current dashboard dataset."
     )
 
 st.divider()
