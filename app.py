@@ -250,10 +250,10 @@ if "language" in df.columns:
         "en": "English",
         "fr": "French",
         "es": "Spanish",
-        "lt": "Uncertain detection (lt)",
-        "no": "Uncertain detection (no)",
-        "so": "Uncertain detection (so)"
-    }
+        "lt": "Other / Uncertain",
+        "no": "Other / Uncertain",
+        "so": "Other / Uncertain"
+}
 
     language_perf = (
         df.groupby("language")
@@ -268,13 +268,19 @@ if "language" in df.columns:
     language_perf["Language"] = (
         language_perf["language"]
         .map(language_names)
-        .fillna(language_perf["language"])
-    )
+        .fillna("Other / Uncertain")
+)
 
-    language_perf = language_perf.sort_values(
-        "median_views",
-        ascending=False
+language_perf = (
+    language_perf.groupby("Language")
+    .agg(
+        videos=("videos", "sum"),
+        average_views=("average_views", "mean"),
+        median_views=("median_views", "median")
     )
+    .reset_index()
+    .sort_values("median_views", ascending=False)
+)
 
     fig_language = px.bar(
         language_perf,
