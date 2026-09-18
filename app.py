@@ -282,17 +282,17 @@ language_perf = (
     .sort_values("median_views", ascending=False)
 )
 
-    fig_language = px.bar(
-        language_perf,
-        x="Language",
-        y="median_views",
-        hover_data=["videos"],
-        labels={
-            "Language": "Detected Transcript Language",
-            "median_views": "Median Views",
-            "videos": "Number of Videos"
-        }
-    )
+fig_language = px.bar(
+    language_perf,
+    x="Language",
+    y="median_views",
+    hover_data=["videos"],
+    labels={
+        "Language": "Detected Transcript Language",
+        "median_views": "Median Views",
+        "videos": "Number of Videos"
+    }
+ )
 
     st.plotly_chart(fig_language, use_container_width=True)
 
