@@ -5,6 +5,11 @@ on:
     - cron: "0 7 * * 1"
 
   workflow_dispatch:
+    inputs:
+      test_only:
+        description: "Check Python syntax without updating data"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -39,11 +44,16 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pandas numpy scikit-learn langdetect google-api-python-client google-generativeai yt-dlp openai-whisper
           python -c "import pandas; print('Pandas installed:', pandas.__version__)"
-      - name: Run weekly YouTube update
+      - name: Check Python syntax
         run: |
-             python weekly_update.py
-
+          python -m compileall -q weekly_update.py scripts utils app.py
+          echo "Python syntax check passed"
+      - name: Run weekly YouTube update
+        if: ${{ github.event_name == 'schedule' || inputs.test_only == false }}
+        run: |
+          python weekly_update.py
       - name: Commit updated dashboard data
+        if: ${{ github.event_name == 'schedule' || inputs.test_only == false }}
         run: |
           git config user.name "morocco-trends-bot"
           git config user.email "actions@github.com"
