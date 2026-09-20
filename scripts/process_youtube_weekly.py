@@ -35,10 +35,9 @@ def process_new_youtube_videos(new_df):
     if "transcript" not in new_df.columns:
         new_df["transcript"] = ""
 
-    print("Loading Whisper model...")
-    model = whisper.load_model("base")
-    print("Whisper ready ✅")
-
+    # Load Whisper only after an audio download succeeds
+    model = None
+    
     success = 0
     skipped = 0
     failed = 0
@@ -128,9 +127,14 @@ def process_new_youtube_videos(new_df):
                 audio_files[0]
             )
 
-            # --------------------------------------------
+             # --------------------------------------------
             # Whisper
             # --------------------------------------------
+
+            if model is None:
+                print("Loading Whisper model...")
+                model = whisper.load_model("base")
+                print("Whisper ready ✅")
 
             print("Transcribing...")
 
