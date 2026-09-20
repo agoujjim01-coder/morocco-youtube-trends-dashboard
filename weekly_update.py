@@ -125,16 +125,11 @@ def run_weekly_update():
 
         print(
             "No usable transcripts produced. "
-            "Stopping safely."
+            "Continuing with metadata-only videos."
         )
 
-        return processed_df
-
-    # 5. NLP + Gemini
-    print("\n[4/7] Running NLP + Gemini...")
-
     analyzed_df = analyze_weekly_batch(
-        usable_df
+        processed_df
     )
 
     # 6. Dashboard rebuild
