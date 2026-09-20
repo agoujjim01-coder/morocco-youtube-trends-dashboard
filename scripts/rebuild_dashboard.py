@@ -138,7 +138,26 @@ def rebuild_dashboard():
     # ---------------------------------------------
     # Combine datasets
     # ---------------------------------------------
+        # Preserve existing values when weekly metadata is missing
+    if not old_df.empty and not weekly_df.empty:
 
+        old_df["video_id"] = old_df["video_id"].astype(str)
+        weekly_df["video_id"] = weekly_df["video_id"].astype(str)
+
+        old_by_id = old_df.set_index("video_id")
+
+        weekly_df = weekly_df.set_index("video_id")
+        
+        weekly_df = weekly_df.replace(
+            r"^\s*$",
+            pd.NA,
+            regex=True
+        )
+
+        weekly_df = weekly_df.combine_first(
+            old_by_id
+        ).loc[weekly_df.index].reset_index()
+        
     combined = pd.concat(
         [old_df, weekly_df],
         ignore_index=True,
@@ -155,7 +174,7 @@ def rebuild_dashboard():
         .astype(str)
     )
 
-        # Prefer a row with a transcript when the same video
+    # Prefer a row with a transcript when the same video
     # appears in both the existing and weekly datasets.
     # If both rows have transcripts (or neither does),
     # keep the newer weekly row.
