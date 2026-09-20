@@ -198,6 +198,7 @@ def analyze_weekly_batch(df):
 
                 result["video_id"] = row["video_id"]
                 result["title_caption"] = row["title_caption"]
+                result["analysis_source"] = "transcript"
 
                 ai_results.append(
                     result
