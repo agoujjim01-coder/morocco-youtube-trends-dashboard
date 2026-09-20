@@ -444,11 +444,14 @@ st.divider()
 # 6. HASHTAG TRENDS
 # =================================================
 
-st.header("🏷️ Which hashtags repeatedly appear together?")
+st.header("🏷️ Which hashtags appear most often?")
 
 if "hashtags" in df.columns:
 
+    hashtag_counts = Counter()
     hashtag_pairs = []
+
+    videos_with_hashtags = 0
 
     for tags in df["hashtags"].dropna():
 
@@ -460,9 +463,78 @@ if "hashtags" in df.columns:
             )
         )
 
+        if not clean_tags:
+            continue
+
+        videos_with_hashtags += 1
+
+        # Count each hashtag only once per video
+        hashtag_counts.update(clean_tags)
+
+        # Count hashtag combinations within each video
         hashtag_pairs.extend(
             combinations(clean_tags, 2)
         )
+
+    # ---------------------------------------------
+    # Individual hashtag frequency
+    # ---------------------------------------------
+
+    top_hashtags = pd.DataFrame(
+        [
+            {
+                "Hashtag": tag,
+                "Videos": count
+            }
+            for tag, count in hashtag_counts.most_common(10)
+        ]
+    )
+
+    if not top_hashtags.empty:
+
+        st.subheader("Most frequent individual hashtags")
+
+        fig_individual = px.bar(
+            top_hashtags.sort_values(
+                "Videos",
+                ascending=True
+            ),
+            x="Videos",
+            y="Hashtag",
+            orientation="h",
+            labels={
+                "Videos": "Number of Videos",
+                "Hashtag": "Hashtag"
+            }
+        )
+
+        fig_individual.update_layout(
+            height=500,
+            yaxis_title=None
+        )
+
+        st.plotly_chart(
+            fig_individual,
+            use_container_width=True
+        )
+
+        st.caption(
+            f"{videos_with_hashtags} of {len(df)} analyzed videos "
+            "contain hashtags. Each hashtag is counted at most "
+            "once per video."
+        )
+
+    else:
+
+        st.info(
+            "No usable hashtags were found in this dataset."
+        )
+
+    # ---------------------------------------------
+    # Hashtag co-occurrence
+    # ---------------------------------------------
+
+    st.subheader("Which hashtags appear together?")
 
     pair_counts = Counter(hashtag_pairs)
 
@@ -492,7 +564,11 @@ if "hashtags" in df.columns:
             ),
             x="Co-occurrences",
             y="Pair",
-            orientation="h"
+            orientation="h",
+            labels={
+                "Co-occurrences": "Number of Videos",
+                "Pair": "Hashtag Pair"
+            }
         )
 
         fig_tags.update_layout(
@@ -506,15 +582,25 @@ if "hashtags" in df.columns:
         )
 
         st.caption(
-            "The strongest recurring hashtag combinations are concentrated "
-            "around Free Fire and related gaming content. Counts are small, "
-            "so these should be read as signals rather than broad conclusions."
+            "Each pair is counted once per video. Multiple "
+            "pairs may come from the same video, so these "
+            "counts should not be interpreted as independent "
+            "trends. Frequent appearance does not establish "
+            "that a hashtag increases views."
         )
 
     else:
+
         st.info(
-            "There are not enough repeated hashtags for co-occurrence analysis."
+            "Not enough hashtag combinations were found "
+            "for co-occurrence analysis."
         )
+
+else:
+
+    st.info(
+        "Hashtag data is not available."
+    )
 
 st.divider()
 
