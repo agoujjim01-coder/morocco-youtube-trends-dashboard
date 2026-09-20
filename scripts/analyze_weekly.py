@@ -313,12 +313,28 @@ def analyze_weekly_batch(df):
 
             ai_combined = ai_new
 
+        # Prefer transcript-based analysis for repeated videos.
+        # If both analyses have the same source,
+        # keep the newer one.
+
+        ai_combined["_source_priority"] = (
+            ai_combined["analysis_source"]
+            .fillna("")
+            .eq("transcript")
+            .astype(int)
+        )
+
         ai_combined = (
             ai_combined
+            .sort_values(
+                "_source_priority",
+                kind="stable"
+            )
             .drop_duplicates(
                 subset=["video_id"],
                 keep="last"
             )
+            .drop(columns=["_source_priority"])
             .reset_index(drop=True)
         )
 
