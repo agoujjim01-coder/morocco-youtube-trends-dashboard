@@ -127,7 +127,9 @@ def run_weekly_update():
             "No usable transcripts produced. "
             "Continuing with metadata-only videos."
         )
-
+    # 5. NLP + Gemini
+    print("\n[4/7] Running NLP + Gemini...")
+    
     analyzed_df = analyze_weekly_batch(
         processed_df
     )
