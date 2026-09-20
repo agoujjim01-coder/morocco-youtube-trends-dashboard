@@ -144,7 +144,11 @@ def analyze_weekly_batch(df):
 
     df["language"] = (
         df["clean_transcript"]
-        .apply(detect_language)
+        .apply(
+            lambda text: detect_language(text)
+            if str(text).strip()
+            else "unknown"
+        )
     )
 
     df["transcript_word_count"] = (
