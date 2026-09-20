@@ -206,9 +206,13 @@ def rebuild_dashboard():
     # Rebuild Phase 1 columns
     # ---------------------------------------------
 
-    combined["clean_transcript"] = (
-        combined["transcript"]
-        .apply(clean_text)
+    combined["language"] = (
+        combined["clean_transcript"]
+        .apply(
+            lambda text: detect_language(text)
+            if str(text).strip()
+            else "unknown"
+        )
     )
 
     combined["language"] = (
