@@ -138,13 +138,17 @@ def rebuild_dashboard():
     # ---------------------------------------------
     # Combine datasets
     # ---------------------------------------------
-        # Preserve existing values when weekly metadata is missing
+    # Preserve existing values when weekly metadata is missing
     if not old_df.empty and not weekly_df.empty:
 
         old_df["video_id"] = old_df["video_id"].astype(str)
         weekly_df["video_id"] = weekly_df["video_id"].astype(str)
 
-        old_by_id = old_df.set_index("video_id")
+        old_by_id = (
+            old_df
+            .drop_duplicates(subset=["video_id"], keep="last")
+            .set_index("video_id")
+        )
 
         weekly_df = weekly_df.set_index("video_id")
         
@@ -221,9 +225,15 @@ def rebuild_dashboard():
         drop=True,
         inplace=True
     )
+    
     # ---------------------------------------------
     # Rebuild Phase 1 columns
     # ---------------------------------------------
+
+    combined["clean_transcript"] = (
+        combined["transcript"]
+        .apply(clean_text)
+    )
 
     combined["language"] = (
         combined["clean_transcript"]
@@ -232,11 +242,6 @@ def rebuild_dashboard():
             if str(text).strip()
             else "unknown"
         )
-    )
-
-    combined["language"] = (
-        combined["clean_transcript"]
-        .apply(detect_language)
     )
 
     # Count words only when a transcript exists
