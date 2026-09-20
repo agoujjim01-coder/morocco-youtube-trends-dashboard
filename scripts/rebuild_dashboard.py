@@ -155,17 +155,35 @@ def rebuild_dashboard():
         .astype(str)
     )
 
+        # Prefer a row with a transcript when the same video
+    # appears in both the existing and weekly datasets.
+    # If both rows have transcripts (or neither does),
+    # keep the newer weekly row.
+
+    combined["_has_usable_transcript"] = (
+        combined["transcript"]
+        .fillna("")
+        .astype(str)
+        .str.strip()
+        .ne("")
+    )
+
     combined = (
         combined
+        .sort_values(
+            "_has_usable_transcript",
+            kind="stable"
+        )
         .drop_duplicates(
             subset=["video_id"],
             keep="last"
         )
+        .drop(columns=["_has_usable_transcript"])
         .reset_index(drop=True)
     )
 
     # ---------------------------------------------
-    # Keep only usable transcripts
+    # Preserve videos with and without transcripts
     # ---------------------------------------------
 
     combined["transcript"] = (
@@ -174,17 +192,16 @@ def rebuild_dashboard():
         .astype(str)
     )
 
-    combined = combined[
+    combined["has_transcript"] = (
         combined["transcript"]
         .str.strip()
-        != ""
-    ].copy()
+        .ne("")
+    )
 
     combined.reset_index(
         drop=True,
         inplace=True
     )
-
     # ---------------------------------------------
     # Rebuild Phase 1 columns
     # ---------------------------------------------
@@ -199,13 +216,15 @@ def rebuild_dashboard():
         .apply(detect_language)
     )
 
+    # Count words only when a transcript exists
     combined["transcript_word_count"] = (
         combined["transcript"]
         .str.split()
         .str.len()
+        .where(combined["has_transcript"])
     )
 
-    # Keep compatibility with your current dashboard
+    # Keep compatibility with the dashboard
     combined["transcript_length"] = (
         combined["transcript_word_count"]
     )
@@ -331,8 +350,15 @@ def rebuild_dashboard():
         if column not in combined.columns:
             combined[column] = ""
 
+    # Keep expected columns first, but preserve any extra
+    # columns already present in the dashboard dataset.
+    extra_columns = [
+        col for col in combined.columns
+        if col not in expected_columns
+    ]
+
     combined = combined[
-        expected_columns
+        expected_columns + extra_columns
     ]
 
     # ---------------------------------------------
