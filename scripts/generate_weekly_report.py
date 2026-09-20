@@ -228,6 +228,14 @@ Top videos:
 Structured Gemini analyses:
 {json.dumps(ai_records, ensure_ascii=False)}
 
+DATA QUALITY RULES:
+- Some videos may have no transcript and may be analysed using metadata only.
+- "unknown" language means spoken language was not established.
+- "unclear" emotional tone or register must not be presented as an observed characteristic.
+- Do not describe what was said or shown in metadata-only videos.
+- Distinguish observed engagement counts from explanations for engagement.
+- A title may suggest a topic but does not verify the video's contents.
+
 Write a concise weekly report using exactly these sections:
 
 # Morocco YouTube Weekly Trend Report
