@@ -638,13 +638,13 @@ if not ai_df.empty:
         hide_index=True
     )
 
-st.caption(
-    f"Gemini semantic analysis is available for {len(ai_df)} "
-    f"of {len(df)} analyzed videos. "
-    f"The remaining {len(df) - len(ai_df)} videos do not yet "
-    "have Gemini results, so AI-based findings reflect "
-    "the analyzed subset rather than the full dataset."
-)
+    st.caption(
+        f"Gemini semantic analysis is available for {len(ai_df)} "
+        f"of {len(df)} analyzed videos. "
+        f"The remaining {len(df) - len(ai_df)} videos do not yet "
+        "have Gemini results, so AI-based findings reflect "
+        "the analyzed subset rather than the full dataset."
+    )
 
 else:
     st.warning("No Gemini analysis results are available.")
