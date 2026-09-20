@@ -338,41 +338,105 @@ else:
 st.divider()
 
 # =================================================
-# 5. CONTENT LENGTH
+# 5. TRANSCRIPT LENGTH VS VIEWS
 # =================================================
 
-st.header("⏱️ Does longer spoken content get more views?")
+st.header("⏱️ Does transcript length relate to video views?")
 
-scatter_df = df[
-    ["transcript_word_count", "views", "title_caption"]
-].copy()
+length_df = df[
+    ["video_id", "title_caption", "transcript_word_count", "views"]
+].dropna().copy()
 
-fig_length = px.scatter(
-    scatter_df,
-    x="transcript_word_count",
-    y="views",
-    hover_name="title_caption",
-    labels={
-        "transcript_word_count": "Transcript Word Count",
-        "views": "Views"
-    }
-)
+length_df = length_df[
+    (length_df["transcript_word_count"] >= 0)
+    & (length_df["views"] >= 0)
+]
 
-st.plotly_chart(fig_length, use_container_width=True)
+if len(length_df) >= 2:
 
-length_corr = df[
-    "transcript_word_count"
-].corr(df["views"])
+    # Original scatter plot: all videos
+    st.subheader("All analyzed videos")
 
-st.metric(
-    "Transcript length ↔ Views correlation",
-    f"{length_corr:.3f}"
-)
+    fig_length = px.scatter(
+        length_df,
+        x="transcript_word_count",
+        y="views",
+        hover_name="title_caption",
+        labels={
+            "transcript_word_count": "Transcript Word Count",
+            "views": "Views"
+        }
+    )
 
-st.caption(
-    "The correlation is close to zero, meaning transcript length has "
-    "almost no linear relationship with views in this dataset."
-)
+    st.plotly_chart(
+        fig_length,
+        use_container_width=True
+    )
+
+    # Correlation across the complete dataset
+    correlation = length_df[
+        "transcript_word_count"
+    ].corr(length_df["views"])
+
+    st.metric(
+        "Transcript word count ↔ Views correlation",
+        f"{correlation:.3f}"
+    )
+
+    st.caption(
+        "The correlation measures the linear association between "
+        "transcript word count and views in this dataset. "
+        "A value close to zero indicates little linear association; "
+        "it does not establish that transcript length has no effect "
+        "on video performance."
+    )
+
+    # Additional chart for examining videos below the
+    # 95th percentile of views
+    view_limit = length_df["views"].quantile(0.95)
+
+    zoom_df = length_df[
+        length_df["views"] <= view_limit
+    ].copy()
+
+    st.subheader("Closer look at lower-view videos")
+
+    fig_zoom = px.scatter(
+        zoom_df,
+        x="transcript_word_count",
+        y="views",
+        hover_name="title_caption",
+        labels={
+            "transcript_word_count": "Transcript Word Count",
+            "views": "Views"
+        }
+    )
+
+    st.plotly_chart(
+        fig_zoom,
+        use_container_width=True
+    )
+
+    st.caption(
+        f"This second chart displays {len(zoom_df)} of "
+        f"{len(length_df)} videos, excluding videos above the "
+        "95th percentile of views to make the remaining "
+        "points easier to examine. The correlation shown above "
+        "is calculated using the full dataset."
+    )
+
+    st.info(
+        "Transcript word count measures the amount of transcribed "
+        "speech or lyrics, not the actual duration of a video. "
+        "Music, gaming, and other content formats can have very "
+        "different amounts of speech."
+    )
+
+else:
+    st.info(
+        "Not enough valid data to analyze transcript length "
+        "and video views."
+    )
 
 st.divider()
 
