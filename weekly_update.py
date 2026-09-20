@@ -86,14 +86,7 @@ def run_weekly_update():
     if new_df is None or len(new_df) == 0:
 
         print("\nNo new trending videos this week ✅")
-
-        print("\nRefreshing dashboard...")
-        rebuild_dashboard()
-
-        print("\nRefreshing weekly report...")
-        generate_weekly_report()
-
-        print("\nWeekly refresh completed ✅")
+        print("Existing dashboard and Gemini history remain unchanged.")
 
         return new_df
 
