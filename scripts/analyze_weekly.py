@@ -78,6 +78,48 @@ TRANSCRIPT:
 # Main analysis
 # -------------------------------------------------
 
+def build_metadata_only_prompt(title, views, likes, comments):
+
+    return f"""
+You are analysing a YouTube video's available metadata
+for creator trend analysis.
+
+IMPORTANT RULES:
+- No transcript or video content is available.
+- Use ONLY the title and numerical metadata below.
+- Do NOT claim to know what was said or shown in the video.
+- Do NOT infer spoken language from the title.
+- Do NOT invent emotional tone, tone shifts, or language register.
+- Use "unclear" when the metadata does not support an answer.
+- Do NOT use outside knowledge about the creator or video.
+- A title can suggest a topic, but does not verify the video's content.
+
+Return ONLY valid JSON using exactly this structure:
+
+{{
+  "main_topic": "",
+  "emotional_tone": "unclear",
+  "tone_shift": "unclear",
+  "language_register": "unclear",
+  "intended_audience": "",
+  "trend_or_cultural_moment": "",
+  "creator_angle": "",
+  "shareability_reason": ""
+}}
+
+VIDEO TITLE:
+{title}
+
+VIEWS:
+{views}
+
+LIKES:
+{likes}
+
+COMMENTS:
+{comments}
+"""
+
 def analyze_weekly_batch(df):
 
     if df is None or len(df) == 0:
@@ -156,19 +198,19 @@ def analyze_weekly_batch(df):
 
         for i, row in df.iterrows():
 
-            transcript = str(
-                row.get("transcript", "")
-            ).strip()
+            transcript_value = row.get("transcript", "")
 
-            if not transcript:
+            transcript = (
+                ""
+                if pd.isna(transcript_value)
+                else str(transcript_value).strip()
+            )
 
-                print(
-                    f"Skipping Gemini: "
-                    f"{row['video_id']} "
-                    f"(empty transcript)"
-                )
-
-                continue
+            analysis_source = (
+                "transcript"
+                if transcript
+                else "metadata_only"
+            )
 
             print(
                 f"Gemini: "
@@ -176,10 +218,21 @@ def analyze_weekly_batch(df):
                 f"- {row['title_caption'][:50]}"
             )
 
-            prompt = build_gemini_prompt(
-                row["title_caption"],
-                transcript
-            )
+            if analysis_source == "transcript":
+
+                prompt = build_gemini_prompt(
+                    row["title_caption"],
+                    transcript
+                )
+
+            else:
+
+                prompt = build_metadata_only_prompt(
+                    row["title_caption"],
+                    row.get("views", "unknown"),
+                    row.get("likes", "unknown"),
+                    row.get("comments", "unknown")
+                )
 
             try:
 
@@ -195,11 +248,16 @@ def analyze_weekly_batch(df):
                 )
 
                 result = json.loads(text)
+                
+                if analysis_source == "metadata_only":
+                    result["emotional_tone"] = "unclear"
+                    result["tone_shift"] = "unclear"
+                    result["language_register"] = "unclear"
 
                 result["video_id"] = row["video_id"]
                 result["title_caption"] = row["title_caption"]
-                result["analysis_source"] = "transcript"
-
+                result["analysis_source"] = analysis_source
+                
                 ai_results.append(
                     result
                 )
