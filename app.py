@@ -25,20 +25,28 @@ def load_data():
 
     df = pd.read_csv(DATA_PATH)
 
-    # Keep only usable transcripts
-    df = df[df["transcript"].notna()].copy()
-    df = df[
-        df["transcript"].astype(str).str.strip() != ""
-    ].reset_index(drop=True)
+    # Keep all videos, including those analyzed using metadata only
+    df["transcript"] = df["transcript"].fillna("").astype(str)
 
-    # Create transcript word count if needed
-    if "transcript_word_count" not in df.columns:
-        df["transcript_word_count"] = (
-            df["transcript"]
-            .astype(str)
-            .str.split()
-            .str.len()
-        )
+    # Mark videos with usable transcripts
+    df["has_transcript"] = df["transcript"].str.strip().ne("")
+    
+    # Calculate word counts only for videos with transcripts
+    df["transcript_word_count"] = pd.NA
+
+    df.loc[
+        df["has_transcript"],
+        "transcript_word_count"
+    ] = (
+        df.loc[df["has_transcript"], "transcript"]
+        .str.split()
+        .str.len()
+    )
+
+    df["transcript_word_count"] = pd.to_numeric(
+        df["transcript_word_count"],
+        errors="coerce"
+    )
 
     if os.path.exists(AI_PATH):
         ai_df = pd.read_csv(AI_PATH)
@@ -49,6 +57,9 @@ def load_data():
 
 
 df, ai_df = load_data()
+
+# Videos with usable transcripts, for transcript-specific charts
+transcript_df = df[df["has_transcript"]].copy()
 
 # =================================================
 # HEADER
@@ -83,9 +94,11 @@ c3.metric("Average Views", f"{int(df['views'].mean()):,}")
 c4.metric("AI-Analyzed Videos", len(ai_df))
 
 st.caption(
-    f"This dashboard analyzes {len(df)} YouTube videos with usable transcripts "
-    f"from the Morocco trends dataset. A subset of {len(ai_df)} videos also "
-    f"includes Gemini-based semantic analysis."
+    f"This dashboard includes {len(df)} YouTube videos from the Morocco trends dataset: "
+    f"{len(transcript_df)} with usable transcripts and "
+    f"{len(df) - len(transcript_df)} without transcripts. "
+    f"Gemini analysis is available for {len(ai_df)} videos, "
+    "using transcripts where available and metadata only otherwise."
 )
 
 st.divider()
@@ -256,7 +269,7 @@ if "language" in df.columns:
     }
 
     language_perf = (
-        df.groupby("language")
+        transcript_df.groupby("language")
         .agg(
             videos=("video_id", "count"),
             average_views=("views", "mean"),
@@ -343,7 +356,7 @@ st.divider()
 
 st.header("⏱️ Does transcript length relate to video views?")
 
-length_df = df[
+length_df = transcript_df[
     ["video_id", "title_caption", "transcript_word_count", "views"]
 ].dropna().copy()
 
@@ -612,14 +625,26 @@ st.header("🤖 What is Gemini detecting in the content?")
 
 if not ai_df.empty:
 
+    transcript_ai_count = (
+        ai_df["analysis_source"].eq("transcript").sum()
+        if "analysis_source" in ai_df.columns else len(ai_df)
+    )
+
+    metadata_ai_count = (
+        ai_df["analysis_source"].eq("metadata_only").sum()
+        if "analysis_source" in ai_df.columns else 0
+    )
+
     st.info(
-        f"Gemini 2.5 Flash successfully extracted themes from "
-        f"{len(ai_df)} of {len(df)} usable videos."
+        f"Gemini analysis is available for {len(ai_df)} of {len(df)} videos: "
+        f"{transcript_ai_count} transcript-based and "
+        f"{metadata_ai_count} metadata-only."
     )
 
     columns_to_show = [
         col for col in [
             "title_caption",
+            "analysis_source",
             "main_topic",
             "emotional_tone",
             "tone_shift",
@@ -639,11 +664,12 @@ if not ai_df.empty:
     )
 
     st.caption(
-        f"Gemini semantic analysis is available for {len(ai_df)} "
-        f"of {len(df)} analyzed videos. "
-        f"The remaining {len(df) - len(ai_df)} videos do not yet "
-        "have Gemini results, so AI-based findings reflect "
-        "the analyzed subset rather than the full dataset."
+        f"Gemini analysis is available for {len(ai_df)} of {len(df)} videos. "
+        f"{transcript_ai_count} analyses use transcripts, while "
+        f"{metadata_ai_count} use metadata only. "
+        "Metadata-only results are limited to information supported by "
+        "video titles and available metadata; they do not establish "
+        "what was said or shown in the videos."
     )
 
 else:
@@ -699,10 +725,12 @@ st.divider()
 with st.expander("⚠️ Data and Analysis Limitations"):
 
     st.markdown(f"""
-- Original dataset: **49 videos**
-- Videos with usable transcripts: **{len(df)}**
-- Videos excluded from text analysis because transcripts were empty: **3**
-- Gemini analyses currently completed: **{len(ai_df)} / {len(df)}**
+- Videos in the dashboard: **{len(df)}**
+- Videos with usable transcripts: **{len(transcript_df)}**
+- Videos without transcripts: **{len(df) - len(transcript_df)}**
+- Gemini transcript-based analyses: **{transcript_ai_count}**
+- Gemini metadata-only analyses: **{metadata_ai_count}**
+- Total Gemini analyses: **{len(ai_df)} / {len(df)}**
 - Speech-to-text data is multilingual and sometimes noisy.
 - Some automatic language labels may be inaccurate for multilingual content.
 - Topic clusters can be influenced by language.
