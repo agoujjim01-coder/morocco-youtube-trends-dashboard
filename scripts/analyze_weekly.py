@@ -277,11 +277,24 @@ def analyze_weekly_batch(df):
                     f"Gemini failed for "
                     f"{row['video_id']}:"
                 )
-
+            
                 print(e)
-
-                # Continue processing other videos
-                time.sleep(15)
+            
+                ai_results.append({
+                    "video_id": row["video_id"],
+                    "title_caption": row["title_caption"],
+                    "analysis_source": analysis_source,
+                    "main_topic": "unclear",
+                    "emotional_tone": "unclear",
+                    "tone_shift": "unclear",
+                    "language_register": "unclear",
+                    "intended_audience": "unclear",
+                    "trend_or_cultural_moment": "unclear",
+                    "creator_angle": "unclear",
+                    "shareability_reason": "unclear"
+                })
+            
+                time.sleep(15))
 
     # ---------------------------------------------
     # Save Gemini history
