@@ -1,10 +1,8 @@
 name: Weekly Morocco YouTube Update
 
 on:
-  schedule:
-    - cron: "0 7 * * 1"
-
   workflow_dispatch:
+  
     inputs:
       test_only:
         description: "Check Python syntax without updating data"
