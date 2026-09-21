@@ -71,7 +71,11 @@ def run_weekly_update():
     # 2. Fetch latest Morocco trends
     print("\n[2/7] Fetching current Morocco trends...")
 
-    max_results=5
+    response = fetch_youtube_trends(
+        youtube,
+        region_code="MA",
+        max_results=5
+    )
 
     new_df = create_metadata_dataframe(
         response,
