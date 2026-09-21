@@ -294,7 +294,7 @@ def analyze_weekly_batch(df):
                     "shareability_reason": "unclear"
                 })
             
-                time.sleep(15))
+                time.sleep(15)
 
     # ---------------------------------------------
     # Save Gemini history
