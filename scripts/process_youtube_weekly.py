@@ -115,7 +115,7 @@ def process_new_youtube_videos(new_df):
                  print("YouTube blocked audio downloads. Switching remaining videos to metadata-only.")
                  break
 
-             continue
+            continue
 
             # Find downloaded audio
             audio_files = [
