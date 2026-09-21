@@ -100,9 +100,10 @@ def process_new_youtube_videos(new_df):
             result = subprocess.run(
                 command,
                 capture_output=True,
-                text=True
+                text=True,
+                timeout=60
             )
-
+            
             if result.returncode != 0:
 
                 failed += 1
