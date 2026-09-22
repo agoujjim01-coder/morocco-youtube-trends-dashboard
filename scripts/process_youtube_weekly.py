@@ -34,7 +34,14 @@ def process_new_youtube_videos(new_df):
 
     if "transcript" not in new_df.columns:
         new_df["transcript"] = ""
-
+        
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        print(
+            "GitHub Actions: skipping audio downloads. "
+            "Videos will continue with metadata-only analysis."
+        )
+        return new_df
+        
     # Load Whisper only after an audio download succeeds
     model = None
     
