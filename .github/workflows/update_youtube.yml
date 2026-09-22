@@ -50,7 +50,7 @@ jobs:
       - name: Run weekly YouTube update
         if: ${{ github.event_name == 'schedule' || inputs.test_only == false }}
         run: |
-          python weekly_update.py
+          python -u weekly_update.py
       - name: Commit updated dashboard data
         if: ${{ github.event_name == 'schedule' || inputs.test_only == false }}
         run: |
