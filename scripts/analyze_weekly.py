@@ -241,7 +241,8 @@ def analyze_weekly_batch(df):
             try:
 
                 response = model.generate_content(
-                    prompt
+                    prompt,
+                    request_options={"timeout": 30}
                 )
 
                 text = (
