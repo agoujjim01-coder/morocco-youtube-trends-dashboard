@@ -142,9 +142,9 @@ def generate_weekly_report():
     # -------------------------------------------------
 
     api_key = os.environ.get(
-        "GEMINI_API_KEY"
-    )
-
+        "GEMINI_API_KEY", ""
+    ).strip()
+    
     if not api_key:
 
         print(
