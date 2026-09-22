@@ -105,17 +105,22 @@ def process_new_youtube_videos(new_df):
             )
             
             if result.returncode != 0:
-
+                
                 failed += 1
                 print("Audio download failed ❌")
                 print(result.stderr[-500:])
             
-            if "Sign in to confirm you’re not a bot" in result.stderr or \
-                "Sign in to confirm you're not a bot" in result.stderr:
-                 print("YouTube blocked audio downloads. Switching remaining videos to metadata-only.")
-                 break
+                if (
+                "Sign in to confirm you’re not a bot" in result.stderr
+                 or "Sign in to confirm you're not a bot" in result.stderr
+                ):
+                    print(
+                        "YouTube blocked audio downloads. "
+                        "Switching remaining videos to metadata-only."
+                    )
+                    break
 
-            continue
+                continue
 
             # Find downloaded audio
             audio_files = [
