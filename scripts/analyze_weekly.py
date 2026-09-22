@@ -165,8 +165,8 @@ def analyze_weekly_batch(df):
     # Gemini
     # ---------------------------------------------
 
-    api_key = os.environ.get("GEMINI_API_KEY")
-
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    
     if not api_key:
 
         try:
