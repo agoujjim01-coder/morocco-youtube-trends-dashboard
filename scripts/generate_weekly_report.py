@@ -270,9 +270,10 @@ Keep it practical and readable.
     try:
 
         response = model.generate_content(
-            prompt
+            prompt,
+            request_options={"timeout": 30}
         )
-
+        
         report = response.text.strip()
 
         with open(
