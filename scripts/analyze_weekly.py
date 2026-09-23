@@ -322,6 +322,7 @@ def analyze_weekly_batch(df):
                 ai_results.append({
                     "video_id": row["video_id"],
                     "title_caption": row["title_caption"],
+                    "content_category": "Other / Unclear",
                     "analysis_source": analysis_source,
                     "main_topic": "unclear",
                     "emotional_tone": "unclear",
