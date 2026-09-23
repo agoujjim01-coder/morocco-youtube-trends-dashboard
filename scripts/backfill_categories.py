@@ -134,21 +134,42 @@ def backfill_categories():
             flush=True
         )
 
-        if transcript:
+        prompt = f"""
+Classify this YouTube video into exactly ONE content category.
 
-            prompt = build_gemini_prompt(
-                title,
-                transcript
-            )
+Choose ONLY from:
+- Music
+- Gaming
+- Movies & Series
+- Entertainment & Challenges
+- Sports & Football
+- Education & Tutorials
+- News & Current Events
+- Lifestyle & Vlogs
+- Food & Cooking
+- Technology
+- Comedy
+- Other / Unclear
 
-        else:
+RULES:
+- Use only the supplied title and transcript, if available.
+- Do not use outside knowledge about the video or creator.
+- If no transcript is available, classify using the title only.
+- Do not assume what happens inside the video.
+- If the evidence is insufficient, choose Other / Unclear.
+- Return ONLY valid JSON, with no explanation.
 
-            prompt = build_metadata_only_prompt(
-                title,
-                row.get("views", "unknown"),
-                row.get("likes", "unknown"),
-                row.get("comments", "unknown")
-            )
+Return exactly this structure:
+{{
+  "content_category": ""
+}}
+
+VIDEO TITLE:
+{title}
+
+TRANSCRIPT:
+{transcript[:6000]}
+"""
 
         try:
 
