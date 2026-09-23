@@ -42,7 +42,7 @@ jobs:
           python -u -c "from scripts.rebuild_dashboard import rebuild_dashboard; rebuild_dashboard()"
 
       - name: Commit updated categories
-        if: always()
+        if: success()
         run: |
           git config user.name "morocco-trends-bot"
           git config user.email "actions@github.com"
