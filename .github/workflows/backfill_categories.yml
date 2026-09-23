@@ -1,1 +1,57 @@
+name: Backfill Existing Video Categories
 
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backfill-categories:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pandas numpy scikit-learn langdetect google-generativeai
+
+      - name: Check Python syntax
+        run: |
+          python -m compileall -q scripts utils
+          echo "Python syntax check passed"
+
+      - name: Classify existing videos
+        run: |
+          python -u -m scripts.backfill_categories
+
+      - name: Rebuild dashboard with categories
+        run: |
+          python -u -c "from scripts.rebuild_dashboard import rebuild_dashboard; rebuild_dashboard()"
+
+      - name: Commit updated categories
+        if: always()
+        run: |
+          git config user.name "morocco-trends-bot"
+          git config user.email "actions@github.com"
+
+          git add data/gemini_analysis.csv data/dashboard_data.csv
+
+          if git diff --cached --quiet; then
+            echo "No category changes to commit."
+          else
+            git commit -m "Backfill existing video content categories"
+            git push
+          fi
