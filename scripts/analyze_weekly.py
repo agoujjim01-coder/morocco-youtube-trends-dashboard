@@ -292,6 +292,24 @@ def analyze_weekly_batch(df):
 
                 result = json.loads(text)
                 
+                allowed_categories = {
+                    "Music",
+                    "Gaming",
+                    "Movies & Series",
+                    "Entertainment & Challenges",
+                    "Sports & Football",
+                    "Education & Tutorials",
+                    "News & Current Events",
+                    "Lifestyle & Vlogs",
+                    "Food & Cooking",
+                    "Technology",
+                    "Comedy",
+                    "Other / Unclear"
+                }
+
+                if result.get("content_category") not in allowed_categories:
+                    result["content_category"] = "Other / Unclear"
+                
                 if analysis_source == "metadata_only":
                     result["emotional_tone"] = "unclear"
                     result["tone_shift"] = "unclear"
