@@ -53,9 +53,28 @@ IMPORTANT RULES:
 - If the transcript is too noisy to support a conclusion, return "unclear".
 - Prefer "unclear" over guessing.
 
+CONTENT CATEGORY RULES:
+- Assign exactly ONE content_category from this list:
+  Music
+  Gaming
+  Movies & Series
+  Entertainment & Challenges
+  Sports & Football
+  Education & Tutorials
+  News & Current Events
+  Lifestyle & Vlogs
+  Food & Cooking
+  Technology
+  Comedy
+  Other / Unclear
+- Use ONLY the video title and transcript.
+- Do not infer the category from outside knowledge.
+- If there is insufficient evidence, use "Other / Unclear".
+
 Return ONLY valid JSON using exactly this structure:
 
 {{
+  "content_category": "",
   "main_topic": "",
   "emotional_tone": "",
   "tone_shift": "",
