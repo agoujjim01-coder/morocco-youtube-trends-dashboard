@@ -355,40 +355,52 @@ def rebuild_dashboard():
         "gemini_analysis.csv"
     )
 
+    if "content_category" not in combined.columns:
+        combined["content_category"] = pd.NA
+
     if os.path.exists(ai_path):
 
         ai_df = pd.read_csv(ai_path)
 
-        if "content_category" in ai_df.columns:
+        if (
+            "video_id" in ai_df.columns
+            and "content_category" in ai_df.columns
+        ):
+
+            ai_df = ai_df.dropna(
+                subset=["video_id"]
+            ).copy()
+
+            ai_df["video_id"] = (
+                ai_df["video_id"].astype(str)
+            )
 
             category_lookup = (
                 ai_df
-                .dropna(subset=["video_id"])
                 .drop_duplicates(
                     subset=["video_id"],
                     keep="last"
                 )
-                .set_index(
-                    ai_df.dropna(subset=["video_id"])
-                    .drop_duplicates(
-                        subset=["video_id"],
-                        keep="last"
-                    )["video_id"].astype(str)
-                )["content_category"]
+                .set_index("video_id")["content_category"]
             )
 
-            combined["content_category"] = (
+            new_categories = (
                 combined["video_id"]
                 .astype(str)
                 .map(category_lookup)
-                .fillna(
-                    combined.get(
-                        "content_category",
-                        pd.Series(index=combined.index, dtype="object")
-                    )
-                )
-                .fillna("Other / Unclear")
             )
+
+            combined["content_category"] = (
+                new_categories.combine_first(
+                    combined["content_category"]
+                )
+            )
+
+    combined["content_category"] = (
+        combined["content_category"]
+        .replace(r"^\s*$", pd.NA, regex=True)
+        .fillna("Other / Unclear")
+    )
 
     # ---------------------------------------------
     # Ensure expected columns exist
