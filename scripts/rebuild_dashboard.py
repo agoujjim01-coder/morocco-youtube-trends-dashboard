@@ -352,6 +352,7 @@ def rebuild_dashboard():
 
     expected_columns = [
         "platform",
+        "content_category",
         "video_id",
         "url",
         "title_caption",
