@@ -347,6 +347,50 @@ def rebuild_dashboard():
         combined["topic_label"] = "Insufficient data"
 
     # ---------------------------------------------
+    # Add content categories from Gemini analysis
+    # ---------------------------------------------
+
+    ai_path = os.path.join(
+        DATA_DIR,
+        "gemini_analysis.csv"
+    )
+
+    if os.path.exists(ai_path):
+
+        ai_df = pd.read_csv(ai_path)
+
+        if "content_category" in ai_df.columns:
+
+            category_lookup = (
+                ai_df
+                .dropna(subset=["video_id"])
+                .drop_duplicates(
+                    subset=["video_id"],
+                    keep="last"
+                )
+                .set_index(
+                    ai_df.dropna(subset=["video_id"])
+                    .drop_duplicates(
+                        subset=["video_id"],
+                        keep="last"
+                    )["video_id"].astype(str)
+                )["content_category"]
+            )
+
+            combined["content_category"] = (
+                combined["video_id"]
+                .astype(str)
+                .map(category_lookup)
+                .fillna(
+                    combined.get(
+                        "content_category",
+                        pd.Series(index=combined.index, dtype="object")
+                    )
+                )
+                .fillna("Other / Unclear")
+            )
+
+    # ---------------------------------------------
     # Ensure expected columns exist
     # ---------------------------------------------
 
