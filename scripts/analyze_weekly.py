@@ -94,9 +94,28 @@ IMPORTANT RULES:
 - Do NOT use outside knowledge about the creator or video.
 - A title can suggest a topic, but does not verify the video's content.
 
+CONTENT CATEGORY RULES:
+- Assign exactly ONE content_category from this list:
+  Music
+  Gaming
+  Movies & Series
+  Entertainment & Challenges
+  Sports & Football
+  Education & Tutorials
+  News & Current Events
+  Lifestyle & Vlogs
+  Food & Cooking
+  Technology
+  Comedy
+  Other / Unclear
+- Classify using ONLY the video title and available metadata.
+- Do not assume what happens inside the video.
+- If the title does not provide enough evidence, use "Other / Unclear".
+
 Return ONLY valid JSON using exactly this structure:
 
 {{
+  "content_category": "", 
   "main_topic": "",
   "emotional_tone": "unclear",
   "tone_shift": "unclear",
